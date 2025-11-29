@@ -1,0 +1,21 @@
+
+[package]
+authors = ["Justin Makaila <justin@treehousetechnology.io>"]
+edition = "2021"
+name = "broadcast_client_napi"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = "3.0.0"
+napi-derive = "3.0.0"
+iracing-broadcast = "0.1"
+
+[build-dependencies]
+napi-build = "2"
+
+[profile.release]
+lto = true
+strip = "symbols"
