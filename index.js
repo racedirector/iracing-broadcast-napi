@@ -557,4 +557,10 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
-module.exports.plus100 = nativeBinding.plus100
+module.exports.BroadcastClient = nativeBinding.BroadcastClient
+module.exports.ChatCommandMode = nativeBinding.ChatCommandMode
+module.exports.PitCommandMode = nativeBinding.PitCommandMode
+module.exports.ReplayPositionMode = nativeBinding.ReplayPositionMode
+module.exports.ReplaySearchMode = nativeBinding.ReplaySearchMode
+module.exports.TelemetryCommandMode = nativeBinding.TelemetryCommandMode
+module.exports.VideoCaptureMode = nativeBinding.VideoCaptureMode
