@@ -1,87 +1,86 @@
-# `@napi-rs/package-template`
+# @iracing-data/broadcast-client
 
-![https://github.com/napi-rs/package-template/actions](https://github.com/napi-rs/package-template/workflows/CI/badge.svg)
+Node-API bindings for [iracing-broadcast](https://crates.io/crates/iracing-broadcast), providing a convenient JavaScript interface for driving the iRacing spectator and camera broadcast API from Node.js. The package ships prebuilt Windows binaries for the supported CPU architectures so you can control an iRacing session without compiling Rust yourself.
 
-> Template project for writing node packages with napi-rs.
-
-# Usage
-
-1. Click **Use this template**.
-2. **Clone** your project.
-3. Run `yarn install` to install dependencies.
-4. Run `yarn napi rename -n [@your-scope/package-name] -b [binary-name]` command under the project folder to rename your package.
-
-## Install this test package
+## Installation
 
 ```bash
-yarn add @napi-rs/package-template
+# npm
+yarn add @iracing-data/broadcast-client
+# or
+npm install @iracing-data/broadcast-client
 ```
 
-## Ability
+> **Note:** iRacing exposes its broadcast API on Windows. The prebuilt artifacts published with this package target `x86_64`, `ia32`, and `arm64` Windows systems.
 
-### Build
+## Usage
 
-After `yarn build/npm run build` command, you can see `package-template.[darwin|win32|linux].node` file in project root. This is the native addon built from [lib.rs](./src/lib.rs).
+Instantiate a `BroadcastClient` and call the helper methods that wrap the iRacing broadcast protocol. All enums are exported from the package for type-safe usage in TypeScript.
 
-### Test
+```ts
+import {
+  BroadcastClient,
+  ReplaySearchMode,
+  PitCommandMode,
+  TelemetryCommandMode,
+  VideoCaptureMode,
+} from '@iracing-data/broadcast-client'
 
-With [ava](https://github.com/avajs/ava), run `yarn test/npm run test` to testing native addon. You can also switch to another testing framework if you want.
+const client = new BroadcastClient()
 
-### CI
+// Camera and replay control
+client.sendCameraSwitchNumber('12', 0, 0)
+client.setReplayPlaySpeed(1, false)
+client.searchReplay(ReplaySearchMode.NextIncident)
 
-With GitHub Actions, each commit and pull request will be built and tested automatically in [`node@20`, `@node22`] x [`macOS`, `Linux`, `Windows`] matrix. You will never be afraid of the native addon broken in these platforms.
+// Pit and chat commands
+client.sendPitCommand(PitCommandMode.Fuel, 60)
+client.sendTelemetryCommand(TelemetryCommandMode.Restart)
 
-### Release
-
-Release native package is very difficult in old days. Native packages may ask developers who use it to install `build toolchain` like `gcc/llvm`, `node-gyp` or something more.
-
-With `GitHub actions`, we can easily prebuild a `binary` for major platforms. And with `N-API`, we should never be afraid of **ABI Compatible**.
-
-The other problem is how to deliver prebuild `binary` to users. Downloading it in `postinstall` script is a common way that most packages do it right now. The problem with this solution is it introduced many other packages to download binary that has not been used by `runtime codes`. The other problem is some users may not easily download the binary from `GitHub/CDN` if they are behind a private network (But in most cases, they have a private NPM mirror).
-
-In this package, we choose a better way to solve this problem. We release different `npm packages` for different platforms. And add it to `optionalDependencies` before releasing the `Major` package to npm.
-
-`NPM` will choose which native package should download from `registry` automatically. You can see [npm](./npm) dir for details. And you can also run `yarn add @napi-rs/package-template` to see how it works.
-
-## Develop requirements
-
-- Install the latest `Rust`
-- Install `Node.js@10+` which fully supported `Node-API`
-- Install `yarn@1.x`
-
-## Test in local
-
-- yarn
-- yarn build
-- yarn test
-
-And you will see:
-
-```bash
-$ ava --verbose
-
-  ✔ sync function from native code
-  ✔ sleep function from native code (201ms)
-  ─
-
-  2 tests passed
-✨  Done in 1.12s.
+// Capture a quick screenshot
+client.controlVideoCapture(VideoCaptureMode.ScreenShot)
 ```
 
-## Release package
+Available methods include:
 
-Ensure you have set your **NPM_TOKEN** in the `GitHub` project setting.
+- Camera control (`sendCameraSwitchPosition`, `sendCameraSwitchNumber`, `setCameraState`)
+- Replay control (`setReplayPlaySpeed`, `setReplayPlayPosition`, `searchReplay`, `toggleReplayState`)
+- Texture reloads (`reloadAllTextures`, `reloadTextures`)
+- Chat commands (`sendChatCommand`, `sendChatMacro`)
+- Pit and telemetry commands (`sendPitCommand`, `sendTelemetryCommand`, `sendForceFeedbackCommand`)
+- Session search and video capture helpers (`searchReplaySessionTime`, `controlVideoCapture`)
 
-In `Settings -> Secrets`, add **NPM_TOKEN** into it.
+See the [TypeScript definitions](./index.d.ts) for the full API surface.
 
-When you want to release the package:
+## Local development
 
-```bash
-npm version [<newversion> | major | minor | patch | premajor | preminor | prepatch | prerelease [--preid=<prerelease-id>] | from-git]
+The repository uses Yarn 4 and ships a set of scripts to help with maintenance:
 
-git push
-```
+- `yarn build` – builds platform-specific native artifacts via `@napi-rs/cli`.
+- `yarn test` – runs the AVA test suite against the built bindings.
+- `yarn lint` – runs oxlint on the JavaScript/TypeScript sources.
+- `yarn format` – formats JavaScript/TypeScript, Rust, and TOML files.
+- `yarn bench` – optional micro-benchmarks with tinybench.
 
-GitHub actions will do the rest job for you.
+Rust (with `cargo`) and Node.js are required for local development. The workspace uses the `napi` toolchain to generate bindings; see [`package.json`](./package.json) for the full script list.
 
-> WARN: Don't run `npm publish` manually.
+## Continuous integration
+
+GitHub Actions is configured in [`.github/workflows/CI.yml`](./.github/workflows/CI.yml) to ensure the bindings stay healthy:
+
+- **Lint job (Windows):** runs Yarn install, oxlint, `cargo fmt --check`, and `cargo clippy` to validate code quality.
+- **Build matrix (Windows targets):** cross-compiles release artifacts for `x86_64`, `ia32`, and `arm64` Windows using the `@napi-rs/cli` build commands and uploads the resulting `.node`/`.wasm` files as artifacts.
+- **Binding tests:** downloads the built artifacts, installs dependencies, and runs `yarn test` on both `node@20` and `node@22`.
+- **Publish:** after successful lint and test jobs, the workflow collects artifacts and publishes to npm when the latest commit message resembles a version tag (with `NPM_TOKEN` provided in repository secrets). This job also enables npm provenance. The commit message must be a bare semver (e.g., `1.0.1`) to satisfy the publish job's `^[0-9]+\.[0-9]+\.[0-9]+` guard.
+
+If you add new targets or change the package name, remember to update the `APP_NAME` environment variable and the build matrix in `CI.yml`.
+
+## Releasing
+
+To cut a release:
+
+1. Bump the version with `npm version [major | minor | patch] -m "%s"` (or a specific semver). The `-m` flag forces the commit message to match the publish job's regex (no leading `v`).
+2. Push the version commit to `main`.
+3. Ensure `NPM_TOKEN` is defined in the repository secrets; the publish job will pick up version-like commit messages and publish the platform packages automatically.
+
+Publishing directly with `npm publish` is intentionally disabled—let CI handle it to ensure binaries are bundled for each platform.
