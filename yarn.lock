@@ -282,7 +282,7 @@ __metadata:
     "@napi-rs/cli": "npm:^3.2.0"
     "@oxc-node/core": "npm:^0.0.34"
     "@taplo/cli": "npm:^0.7.0"
-    "@tybys/wasm-util": "npm:^0.10.0"
+    "@tybys/wasm-util": "npm:^0.10.1"
     ava: "npm:^6.4.1"
     chalk: "npm:^5.6.2"
     husky: "npm:^9.1.7"
