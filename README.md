@@ -71,7 +71,7 @@ GitHub Actions is configured in [`.github/workflows/CI.yml`](./.github/workflows
 - **Lint job (Windows):** runs Yarn install, oxlint, `cargo fmt --check`, and `cargo clippy` to validate code quality.
 - **Build matrix (Windows targets):** cross-compiles release artifacts for `x86_64`, `ia32`, and `arm64` Windows using the `@napi-rs/cli` build commands and uploads the resulting `.node`/`.wasm` files as artifacts.
 - **Binding tests:** downloads the built artifacts, installs dependencies, and runs `yarn test` on both `node@20` and `node@22`.
-- **Publish:** after successful lint and test jobs, the workflow collects artifacts and publishes to npm when the latest commit message resembles a version tag (with `NPM_TOKEN` provided in repository secrets). This job also enables npm provenance.
+- **Publish:** after successful lint and test jobs, the workflow collects artifacts and publishes to npm when the latest commit message resembles a version tag (with `NPM_TOKEN` provided in repository secrets). This job also enables npm provenance. The commit message must be a bare semver (e.g., `1.0.1`) to satisfy the publish job's `^[0-9]+\.[0-9]+\.[0-9]+` guard.
 
 If you add new targets or change the package name, remember to update the `APP_NAME` environment variable and the build matrix in `CI.yml`.
 
@@ -79,7 +79,7 @@ If you add new targets or change the package name, remember to update the `APP_N
 
 To cut a release:
 
-1. Bump the version with `npm version [major | minor | patch]` (or a specific semver).
+1. Bump the version with `npm version [major | minor | patch] -m "%s"` (or a specific semver). The `-m` flag forces the commit message to match the publish job's regex (no leading `v`).
 2. Push the version commit to `main`.
 3. Ensure `NPM_TOKEN` is defined in the repository secrets; the publish job will pick up version-like commit messages and publish the platform packages automatically.
 
