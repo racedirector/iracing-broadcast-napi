@@ -15,6 +15,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@emnapi/core@npm:^1.7.1":
+  version: 1.7.1
+  resolution: "@emnapi/core@npm:1.7.1"
+  dependencies:
+    "@emnapi/wasi-threads": "npm:1.1.0"
+    tslib: "npm:^2.4.0"
+  checksum: 10c0/f3740be23440b439333e3ae3832163f60c96c4e35337f3220ceba88f36ee89a57a871d27c94eb7a9ff98a09911ed9a2089e477ab549f4d30029f8b907f84a351
+  languageName: node
+  linkType: hard
+
 "@emnapi/runtime@npm:^1.5.0":
   version: 1.5.0
   resolution: "@emnapi/runtime@npm:1.5.0"
@@ -277,7 +287,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@iracing-data/broadcast-client@workspace:."
   dependencies:
-    "@emnapi/core": "npm:^1.5.0"
+    "@emnapi/core": "npm:^1.7.1"
     "@emnapi/runtime": "npm:^1.5.0"
     "@napi-rs/cli": "npm:^3.2.0"
     "@oxc-node/core": "npm:^0.0.34"
